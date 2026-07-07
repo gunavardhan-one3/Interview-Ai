@@ -23,10 +23,9 @@ export const useAuth=()=>{
         }
     }
 
-    const handleRegister = async({name,email,password})=>{
+    const handleRegister = async({username,email,password})=>{
         setLoading(true);
         try{
-
             const data = await register({username,email,password});
             setUser(data.user);
         }catch(error){
@@ -37,6 +36,9 @@ export const useAuth=()=>{
 }
     
     const handleLogout = async()=>{
+         const confirmed = window.confirm("Are you sure you want to logout?");
+
+    if (!confirmed) return;
         setLoading(true);
         try{
 
@@ -52,7 +54,7 @@ export const useAuth=()=>{
 
     useEffect(() => {
     const getAndSetUser = async () => {
-        try {
+        try { 
             const data = await getMe();
             setUser(data.user);
         } catch (error) {

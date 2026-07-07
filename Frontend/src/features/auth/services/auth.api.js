@@ -18,8 +18,10 @@ const api= axios.create({
     return  response.data;
 }
     catch(err){
-        console.log(err);
-    }
+          if (err.response?.status !== 401) {
+            console.error(err);
+        }
+}
  }
 
  export async function login({email,password}){
@@ -31,17 +33,20 @@ const api= axios.create({
         return response.data;
     }
     catch(err){
-        console.log(err);
+        const data = await err.response.data;
+        console.log(data.message);
     }
  }
 
  export async function logout(){
+
     try{
         const response= await api.post('/logout',{})
         return response.data;
     }
     catch(err){
-        console.log(err);
+        const data = await err.response.data;
+        console.log(data.message);
     }
  }
 
@@ -51,6 +56,11 @@ const api= axios.create({
         return response.data;
     }
     catch(err){
-        console.log(err);
+         if (err.response?.status === 401) {
+            return null;
+        }
+
+        console.error(err);
+        throw err;
     }
  }
