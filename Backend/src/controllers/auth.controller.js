@@ -5,10 +5,12 @@ const tokenBlacklistModel = require("../models/blacklist.model");
 
 const COOKIE_NAME = "token";
 const TOKEN_TTL_SECONDS = 24 * 60 * 60;
+const isProduction = process.env.NODE_ENV === "production";
+
 const cookieOptions = {
     httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
     path: "/",
     maxAge: TOKEN_TTL_SECONDS * 1000,
 };
@@ -91,12 +93,11 @@ async function logoutUserController(req, res) {
     }
 
     res.clearCookie(COOKIE_NAME, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === "production",
-        sameSite: "lax",
-        path: "/",
-    });
-    return res.status(200).json({ message: "Logged out successfully." });
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+});
 }
 
 async function getMeController(req, res) {
