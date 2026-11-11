@@ -4,6 +4,7 @@ ENV NODE_ENV=production
 WORKDIR /app
 
 RUN apt-get update && apt-get install -y --no-install-recommends \
+    unzip \
     ca-certificates \
     fonts-liberation \
     libasound2 \
