@@ -390,3 +390,16 @@ background: #dc2626;
         }
     }
 }
+
+.form-error {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-size: 0.9rem;
+}
+
+.generate-btn:disabled { opacity: 0.55; cursor: not-allowed; }
+.remove-file-btn { margin-top: 8px; border: 0; background: transparent; color: #b42318; cursor: pointer; }

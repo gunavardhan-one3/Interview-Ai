@@ -1,66 +1,28 @@
- import axios from 'axios';
+import axios from "axios";
 
+const api = axios.create({ baseURL: "/api/auth", withCredentials: true });
 
- 
-const api= axios.create({
-    baseURL:'http://localhost:3000/api/auth',
-    withCredentials:true
-})
-
-
-
- export async function register({username,email,password}){
-
-    try{
-   const response = await api.post('/register',{
-        username,email,password
-    })
-    return  response.data;
+export async function register({ username, email, password }) {
+    const response = await api.post("/register", { username, email, password });
+    return response.data;
 }
-    catch(err){
-          if (err.response?.status !== 401) {
-            console.error(err);
-        }
+
+export async function login({ email, password }) {
+    const response = await api.post("/login", { email, password });
+    return response.data;
 }
- }
 
- export async function login({email,password}){
+export async function logout() {
+    const response = await api.post("/logout");
+    return response.data;
+}
 
-    try{
-        const response = await api.post('/login',{
-            email,password
-        })
+export async function getMe() {
+    try {
+        const response = await api.get("/get-me");
         return response.data;
+    } catch (error) {
+        if (error.response?.status === 401 || error.response?.status === 404) return null;
+        throw error;
     }
-    catch(err){
-        const data = await err.response.data;
-        console.log(data.message);
-    }
- }
-
- export async function logout(){
-
-    try{
-        const response= await api.post('/logout',{})
-        return response.data;
-    }
-    catch(err){
-        const data = await err.response.data;
-        console.log(data.message);
-    }
- }
-
- export async function getMe(){
-    try{
-        const response =await api.get('/get-me')
-        return response.data;
-    }
-    catch(err){
-         if (err.response?.status === 401) {
-            return null;
-        }
-
-        console.error(err);
-        throw err;
-    }
- }
+}

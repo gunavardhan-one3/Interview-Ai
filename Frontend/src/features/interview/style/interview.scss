@@ -508,3 +508,13 @@ $severity-low: #3fb950;
 .logout-btn:hover {
     background: #dc2626;
 }
+
+.form-error {
+  color: #b42318;
+  background: #fef3f2;
+  border: 1px solid #fecdca;
+  border-radius: 8px;
+  padding: 10px 12px;
+  margin: 12px 0;
+  font-size: 0.9rem;
+}

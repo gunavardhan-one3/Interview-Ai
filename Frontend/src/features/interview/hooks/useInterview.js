@@ -1,87 +1,95 @@
-import {getAllInterviewReports,generateInterviewReport, getInterviewReportById, generateResumePdf} from "../services/interview.api";
-import {useContext,useEffect} from "react";
-import {InterviewContext} from "../Interview.content.jsx";
-import {useParams} from "react-router";
+import { useContext, useEffect } from "react";
+import { useParams } from "react-router";
+import { InterviewContext } from "../Interview.context.js";
+import {
+    getAllInterviewReports,
+    generateInterviewReport,
+    getInterviewReportById,
+    generateResumePdf,
+} from "../services/interview.api.js";
 
 export const useInterview = () => {
     const context = useContext(InterviewContext);
-    const {interviewId} = useParams();
-    if(!context){
-        throw new Error("useInterview must be used within a InterviewProvider");
-    }
-    const {loading,setLoading,report,setReport,reports,setReports} = context; 
-    const generateReport = async ({jobDescription, selfDescription, resumeFile})=>{
-        setLoading(true);
-        let response=null;
-        try{
-            response = await generateInterviewReport({jobDescription, selfDescription, resumeFile});
-            setReport(response.interviewReport);
-        }
-        catch(error){
-            console.log("Error generating interview report:", error);
-        }
-        finally{
-            setLoading(false);
-        }
-        return response.interviewReport;
-        }
-    const getReportById = async (interviewId)=>{
-        setLoading(true);
-        let response=null;
-        try{
-            response = await getInterviewReportById(interviewId);
-            setReport(response.interviewReport);
-        }
-        catch(error){   
-            console.log("Error fetching interview report by id:", error);
-        }finally{
-            setLoading(false);
-        }
-        return response.interviewReport;
-    }
-    const getReports = async ()=>{
+    const { interviewId } = useParams();
+    if (!context) throw new Error("useInterview must be used within an InterviewProvider.");
 
+    const {
+        loading, setLoading, report, setReport,
+        reports, setReports, error, setError,
+    } = context;
+
+    const generateReport = async (payload) => {
         setLoading(true);
-        let response=null;
-        try{
-            response = await getAllInterviewReports();
-            setReports(response.interviewReports);
-        }  
-        catch(error){   
-            console.log("Error fetching all interview reports:", error);
-        }   
-        finally{
+        setError("");
+        try {
+            const response = await generateInterviewReport(payload);
+            setReport(response.interviewReport);
+            return response.interviewReport;
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to generate the interview report. Please try again.");
+            throw requestError;
+        } finally {
             setLoading(false);
         }
+    };
 
-        return response.interviewReports;
-    }
-     
-const  getResumePdf = async ({interviewReportId})=>{
-    setLoading(true);
-    let response=null;
-    try{
-        console.log("interviewReportId:", interviewReportId);
-        response = await generateResumePdf({interviewReportId});
-        const url = window.URL.createObjectURL(new Blob([response], { type: 'application/pdf' }));
-        const link = document.createElement('a');
-        link.href = url;
-        link.setAttribute('download', `resume_${interviewReportId}.pdf`);
-        document.body.appendChild(link);
-        link.click();
-    }
-    catch(error){
-        console.log("Error generating resume pdf:", error);
-    }finally{
-        setLoading(false);
-    }
-}
-   useEffect(()=>{
-            if(interviewId){
-                getReportById(interviewId);
-            }else{
-                getReports();
-            }
-        },[interviewId])
-return {loading,report,reports,generateReport,getReportById,getReports,getResumePdf};
-}
+    const getReportById = async (id) => {
+        setLoading(true);
+        setError("");
+        setReport(null);
+        try {
+            const response = await getInterviewReportById(id);
+            setReport(response.interviewReport);
+            return response.interviewReport;
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to load this interview report.");
+            return null;
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getReports = async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const response = await getAllInterviewReports();
+            setReports(response.interviewReports || []);
+            return response.interviewReports || [];
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to load your previous reports.");
+            return [];
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const getResumePdf = async (id) => {
+        setLoading(true);
+        setError("");
+        try {
+            const blob = await generateResumePdf({ interviewReportId: id });
+            const url = window.URL.createObjectURL(blob);
+            const link = document.createElement("a");
+            link.href = url;
+            link.download = `resume_${id}.pdf`;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            window.setTimeout(() => window.URL.revokeObjectURL(url), 1000);
+        } catch (requestError) {
+            setError(requestError.response?.data?.message || "Unable to generate the resume PDF.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        if (interviewId) getReportById(interviewId);
+        else getReports();
+        // Route ID is the intended trigger; context setters and imported services are stable.
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [interviewId]);
+
+    return { loading, report, reports, error, generateReport, getReportById, getReports, getResumePdf };
+};
